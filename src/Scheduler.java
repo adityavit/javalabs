@@ -1,5 +1,7 @@
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -37,7 +39,9 @@ public class Scheduler {
 	
 	private static Process runningProcess = null;
 	
-	private static Integer finishTime =-1;
+	private static Float finishTime = new Float(-1);
+	
+	private static Float cpuBusyTime = new Float(0);
 	
 	private static Integer numberOfProcesses;
 	
@@ -50,10 +54,9 @@ public class Scheduler {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		String inputFileName = null;
-		String outputFileName = null;
 		Integer schedulingAlgoNumber = null;
 		Scanner sc = null;
-		if (args.length == 3) {
+		if (args.length >= 2) {
 			try{
 			schedulingAlgoNumber = Integer.parseInt(args[0]);
 			if(schedulingAlgoNumber >3 || schedulingAlgoNumber <0) 
@@ -63,10 +66,9 @@ public class Scheduler {
 				System.exit(-1);
 			}
 			inputFileName = args[1];
-			outputFileName = args[2];
 		} else {
 			System.out
-					.println("Error: Only Three arguments are required.Scheduling algorithm \n 0.First Come and First Serve \n 1.Round Robin Quantum 2 \n 2.Shortest remaining Job First \n and Input File name followed by output file name");
+					.println("Error: Only Two arguments are required.Scheduling algorithm \n 0.First Come and First Serve \n 1.Round Robin Quantum 2 \n 2.Shortest remaining Job First \n and Input File name.");
 			System.exit(-1);
 		}
 		try {
@@ -84,18 +86,17 @@ public class Scheduler {
 			sc.nextLine();
 		}
 		numberOfProcesses = processCount;
-		
 		switch(schedulingAlgoNumber){
-		case 2:
-			System.out.println("First Come First Serve");
+		case 0:
+			//System.out.println("First Come First Serve");
 			fcfs(processList);
 			break;
 		case 1:
-			System.out.println("Round Robin Quantum 2");
+			//System.out.println("Round Robin Quantum 2");
 			roundRobin(processList);
 			break;
-		case 0:
-			System.out.println("Shortest remaining Job First");
+		case 2:
+			//System.out.println("Shortest remaining Job First");
 			srjf(processList);
 			break;
 		default:
@@ -144,12 +145,7 @@ public class Scheduler {
 							blockedProcessRemoved.add(blockedProcess);
 							runningProcess = blockedProcess;
 							tempBlockedProcess.setRunningState();
-						}else if(processorBusy == true && runningProcess.getArrivalTime() > tempBlockedProcess.getArrivalTime()){
-							runningProcess.setReadyState();
-							readyProcessList.add(runningProcess);
-							tempBlockedProcess.setRunningState();
-							runningProcess = tempBlockedProcess;
-							blockedProcessRemoved.add(blockedProcess);
+							processorBusy = true;
 						}else{
 						blockedProcessRemoved.add(blockedProcess);
 						readyProcessList.add(tempBlockedProcess);
@@ -204,15 +200,22 @@ public class Scheduler {
 			System.out.print(schedulerTime+":");
 			for(Process pro : processList){
 				pro.increaseQuantum();
-				if(pro.getIsStarted() && !pro.getIsTerminated())
-				System.out.print(pro);
-			}
+				if(pro.getIsStarted() && !pro.getIsTerminated()){
+					System.out.print(pro);
+					if(pro.isRunning()){
+						cpuBusyTime++;
+					}
+						
+				}
+				}
 			System.out.println();
 			}
 			schedulerTime++;
 		}
 		
-		System.out.println("Finishing time: "+finishTime);
+		System.out.println("Finishing time: "+finishTime.intValue());
+		Float cpuTime = cpuBusyTime/(finishTime+1);
+		System.out.printf("CPU Utilization: %.2f\n",cpuTime);
 		for(Process pro : processList){
 			System.out.println(pro.printTurnAroundTime());
 		}
@@ -288,14 +291,20 @@ public class Scheduler {
 				System.out.print(schedulerTime+":");
 				for(Process pro : processList){
 					pro.increaseQuantum();
-					if(pro.getIsStarted() && !pro.getIsTerminated())
-					System.out.print(pro);
+					if(pro.getIsStarted() && !pro.getIsTerminated()){
+						System.out.print(pro);
+						if(pro.isRunning()){
+							cpuBusyTime++;
+						}
+							
+					}
 				}
 				System.out.println();
 				}
 				schedulerTime++;	
 		}
-		System.out.println("Finishing time: "+finishTime);
+		System.out.println("Finishing time: "+finishTime.intValue());
+		System.out.printf("CPU Utilization: %.2f\n",cpuBusyTime/(finishTime+1));
 		for(Process pro : processList){
 			System.out.println(pro.printTurnAroundTime());
 		}
@@ -375,8 +384,13 @@ public class Scheduler {
 				System.out.print(schedulerTime+":");
 				for(Process pro : processList){
 					pro.increaseQuantum();
-					if(pro.getIsStarted() && !pro.getIsTerminated())
-					System.out.print(pro);
+					if(pro.getIsStarted() && !pro.getIsTerminated()){
+						System.out.print(pro);
+						if(pro.isRunning()){
+							cpuBusyTime++;
+						}
+							
+					}
 				}
 				System.out.println();
 				}
@@ -384,7 +398,8 @@ public class Scheduler {
 			
 		}
 		
-		System.out.println("Finishing time: "+finishTime);
+		System.out.println("Finishing time: "+finishTime.intValue());
+		System.out.printf("CPU Utilization: %.2f\n",cpuBusyTime/(finishTime+1));
 		for(Process pro : processList){
 			System.out.println(pro.printTurnAroundTime());
 		}
@@ -536,6 +551,13 @@ public class Scheduler {
 		
 		public Integer getRemainingCpuTime(){
 			return cpuTime - cpuTimeSpent;
+		}
+		
+		public Boolean isRunning(){
+			if(processState.equals(RUNNING_STATE)){
+				return true;
+			}
+			else return false;
 		}
 		public void increaseQuantum(){
 			if(isStarted && !isTerminated){
