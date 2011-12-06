@@ -11,10 +11,20 @@ import java.util.Scanner;
 
 
 /**
+ * The input is given in a file which is given as an argument to the program.
+ * Every line in input file shows a page described as <page number>
  * 
+ * The program is using JDK 1.6
+ * The compilation is done as ->javac Replacement.java
+ * For running the byte code use ->java Replacement <Replacement-policy> <memory-size>  <Input-File> 
+ * The Replacemet Algorithm Number is described as 
+ * 0.First In First Out.
+ * 1.Second Chance.
+ * 2.Last Recently Used.
  */
 
 /**
+ * The Replacement class to provide the Replacement functionality.
  * @author aditya
  *
  */
@@ -26,14 +36,18 @@ public class Replacement {
 	
 	private static final String LRU_REPLACEMENT_NAME = "lru";
 	
+	//Stores the arguments map.
 	private static Map<Integer,String> replacementMapArgs;
 	
+	//Stores the pageSequence which are accessed in the memory.
 	private static List<Page> pageSequence = new ArrayList<Page>();
 	
+	//Shows the virtual memory and stores the page.
 	private static Page[] fixedMemory = null;
 	
 	private static Integer totalPages = null;
 	
+	//Keep count of page faults.
 	private static Integer pageFaults = 0;
 	
 	private static PrintWriter pw = null;
@@ -91,15 +105,15 @@ public class Replacement {
 		pw = new PrintWriter(new FileWriter(outputFileName));
 		switch(replacementPolicy){
 		case 0:
-			System.out.println("First In First Out");
+			//System.out.println("First In First Out");
 			fifo(pageSequence);
 			break;
 		case 1:
-			System.out.println("Second Chance.");
+			//System.out.println("Second Chance.");
 			secondChance(pageSequence);
 			break;
 		case 2:
-			System.out.println("Last Recently Used.");
+			//System.out.println("Last Recently Used.");
 			lastRecentlyUsed(pageSequence);
 			break;
 		default:
@@ -109,7 +123,9 @@ public class Replacement {
 		pw.close();
 	}
 	
-	
+	/**
+	 *Provide the logic of fifo on the page replacement.
+	 **/
 	public static void fifo(List<Page> pages){
 		Integer pageToReplaceMemoryIndex = 0;
 		Integer memoryIndex = 0;
@@ -145,6 +161,9 @@ public class Replacement {
 		printPageFault();
 	}
 	
+	/**
+	 * Provides the logic of Second Chance algorithm for the list of pages.	
+	 **/
 	public static void secondChance(List<Page> pages){
 		Integer pageToReplaceMemoryIndex = 0;
 		Integer memoryIndex = 0;
@@ -187,7 +206,10 @@ public class Replacement {
 		}
 		printPageFault();
 	}
-	
+
+	/**
+	 * Provides the logic of lasr recently used algorithm for the list of pages.	
+	 **/
 	public static void lastRecentlyUsed(List<Page> pages){
 		ArrayList<Integer> lastRecentlyUsedQueue = new ArrayList<Integer>();
 		Integer memoryIndex = 0;
@@ -233,6 +255,11 @@ public class Replacement {
 		}
 		printPageFault();
 	}
+       
+        /**
+	 * Prints the memory map.	
+	 **/
+
 	private static void printMemoryMap(){
 		for(int i=0;i<fixedMemory.length;i++){
 			if(fixedMemory[i] != null){
@@ -245,7 +272,10 @@ public class Replacement {
 	private static void printPageFault(){
 		pw.printf("\n Precentage of page faults: %.2f \n",(float)pageFaults/totalPages); 
 	}
-	
+
+	/*
+	 * Inner Page class to store Page information.
+ 	 */	
 	private static class Page{
 		
 		private final Integer pageNumber;
